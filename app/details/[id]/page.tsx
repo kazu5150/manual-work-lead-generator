@@ -1,0 +1,342 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { AnalysisResult } from "@/components/AnalysisResult";
+import { Company, ScrapedData, AnalysisResult as AnalysisResultType } from "@/types";
+import {
+  ArrowLeft,
+  Building2,
+  MapPin,
+  Phone,
+  Globe,
+  Star,
+  Brain,
+  FileText,
+  Loader2,
+  Mail,
+  ExternalLink,
+} from "lucide-react";
+
+export default function CompanyDetailsPage() {
+  const params = useParams();
+  const router = useRouter();
+  const companyId = params.id as string;
+
+  const [company, setCompany] = useState<Company | null>(null);
+  const [scrapedData, setScrapedData] = useState<ScrapedData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [scraping, setScraping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // Fetch company
+      const companyResponse = await fetch(`/api/companies?id=${companyId}`);
+      const companyData = await companyResponse.json();
+
+      if (!companyData.success || !companyData.company) {
+        setError("企業が見つかりません");
+        return;
+      }
+
+      setCompany(companyData.company);
+
+      // Try to fetch scraped data
+      try {
+        const scrapedResponse = await fetch(`/api/scrape?companyId=${companyId}`);
+        const scrapedDataResult = await scrapedResponse.json();
+        if (scrapedDataResult.success) {
+          setScrapedData(scrapedDataResult.data);
+        }
+      } catch {
+        // Scraped data might not exist yet
+      }
+    } catch {
+      setError("企業データの取得に失敗しました");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [companyId]);
+
+  const handleAnalyze = async () => {
+    setAnalyzing(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "分析に失敗しました");
+      }
+
+      setCompany(data.company);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "分析中にエラーが発生しました");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleScrape = async () => {
+    setScraping(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "HP取得に失敗しました");
+      }
+
+      setScrapedData(data.data);
+      await fetchData(); // Refresh company data
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "HP取得中にエラーが発生しました");
+    } finally {
+      setScraping(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!company) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <p className="text-muted-foreground">企業が見つかりません</p>
+          <Button variant="outline" className="mt-4" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            戻る
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const analysisResult: AnalysisResultType | null =
+    company.ai_score !== null
+      ? {
+          score: company.ai_score,
+          reason: company.ai_reason || "",
+          manualWorkPotential: scrapedData?.manual_work_potential || "不明",
+          recommendedApproach: "詳細はHP情報を取得してください",
+        }
+      : null;
+
+  return (
+    <div className="space-y-6">
+      <Button variant="ghost" onClick={() => router.back()}>
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        戻る
+      </Button>
+
+      {error && (
+        <Card className="border-destructive">
+          <CardContent className="py-4 text-center text-destructive">
+            {error}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Company Header */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <Building2 className="h-6 w-6" />
+                {company.name}
+              </CardTitle>
+              <div className="flex gap-2 mt-2">
+                <Badge
+                  variant={
+                    company.status === "emailed"
+                      ? "success"
+                      : company.status === "scraped"
+                      ? "default"
+                      : company.status === "analyzed"
+                      ? "warning"
+                      : "secondary"
+                  }
+                >
+                  {company.status === "emailed"
+                    ? "メール作成済"
+                    : company.status === "scraped"
+                    ? "HP取得済"
+                    : company.status === "analyzed"
+                    ? "分析済"
+                    : "未分析"}
+                </Badge>
+                {company.ai_score !== null && (
+                  <Badge
+                    variant={
+                      company.ai_score >= 70
+                        ? "success"
+                        : company.ai_score >= 40
+                        ? "warning"
+                        : "secondary"
+                    }
+                  >
+                    スコア: {company.ai_score}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {company.address && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              {company.address}
+            </div>
+          )}
+          {company.phone && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Phone className="h-4 w-4" />
+              {company.phone}
+            </div>
+          )}
+          {company.website && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Globe className="h-4 w-4" />
+              <a
+                href={company.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline flex items-center gap-1"
+              >
+                {company.website}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
+          {company.rating && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Star className="h-4 w-4 text-yellow-500" />
+              {company.rating.toFixed(1)}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Actions */}
+      <div className="flex gap-4 flex-wrap">
+        <Button
+          onClick={handleAnalyze}
+          disabled={analyzing}
+          variant={company.ai_score !== null ? "outline" : "default"}
+        >
+          {analyzing ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Brain className="h-4 w-4 mr-2" />
+          )}
+          {company.ai_score !== null ? "再分析" : "AI分析を実行"}
+        </Button>
+
+        {company.website && (
+          <Button
+            onClick={handleScrape}
+            disabled={scraping}
+            variant={scrapedData ? "outline" : "default"}
+          >
+            {scraping ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileText className="h-4 w-4 mr-2" />
+            )}
+            {scrapedData ? "HP情報を再取得" : "HP情報を取得"}
+          </Button>
+        )}
+
+        {(company.status === "scraped" || company.status === "emailed") && (
+          <Link href={`/proposal/${company.id}`}>
+            <Button>
+              <Mail className="h-4 w-4 mr-2" />
+              提案メール作成
+            </Button>
+          </Link>
+        )}
+      </div>
+
+      {/* Analysis Result */}
+      {analysisResult && <AnalysisResult result={analysisResult} />}
+
+      {/* Scraped Data */}
+      {scrapedData && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              HP情報
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {scrapedData.extracted_services &&
+              scrapedData.extracted_services.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2">抽出されたサービス</p>
+                  <div className="flex flex-wrap gap-2">
+                    {scrapedData.extracted_services.map((service, index) => (
+                      <Badge key={index} variant="outline">
+                        {service}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            {scrapedData.manual_work_potential && (
+              <div>
+                <p className="text-sm font-medium mb-2">手作業ポテンシャル</p>
+                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                  {scrapedData.manual_work_potential}
+                </p>
+              </div>
+            )}
+
+            {scrapedData.content && (
+              <div>
+                <p className="text-sm font-medium mb-2">HP内容（抜粋）</p>
+                <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md max-h-[300px] overflow-y-auto whitespace-pre-wrap">
+                  {scrapedData.content.substring(0, 2000)}
+                  {scrapedData.content.length > 2000 && "..."}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
