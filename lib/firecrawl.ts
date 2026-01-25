@@ -13,6 +13,18 @@ export interface ScrapeResult {
   error?: string;
 }
 
+export interface SearchResult {
+  success: boolean;
+  urls: string[];
+  error?: string;
+}
+
+export interface MapResult {
+  success: boolean;
+  urls: string[];
+  error?: string;
+}
+
 export async function scrapeWebsite(url: string): Promise<ScrapeResult> {
   try {
     const response = await fetch(`${FIRECRAWL_API_BASE}/scrape`, {
@@ -131,4 +143,102 @@ export async function crawlWebsite(
       error: error instanceof Error ? error.message : 'Unknown error',
     }];
   }
+}
+
+// Search API - サイト内で特定キーワードを含むページを検索
+export async function searchWebsite(
+  domain: string,
+  keywords: string[] = ['手作業', '外注', '委託', '作業', 'サービス']
+): Promise<SearchResult> {
+  try {
+    const query = `site:${domain} ${keywords.join(' OR ')}`;
+
+    const response = await fetch(`${FIRECRAWL_API_BASE}/search`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+      },
+      body: JSON.stringify({
+        query,
+        limit: 5,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        urls: [],
+        error: data.error || 'Search failed',
+      };
+    }
+
+    // Extract URLs from search results
+    const urls = (data.data || [])
+      .map((result: { url?: string }) => result.url)
+      .filter((url: string | undefined): url is string => !!url);
+
+    return {
+      success: true,
+      urls,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      urls: [],
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+// Map API - サイト内のURL一覧を取得し、関連ページをフィルタ
+export async function mapWebsite(
+  url: string,
+  searchTerms: string = 'サービス OR 事業 OR 会社概要 OR about OR service OR business'
+): Promise<MapResult> {
+  try {
+    const response = await fetch(`${FIRECRAWL_API_BASE}/map`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+      },
+      body: JSON.stringify({
+        url,
+        search: searchTerms,
+        limit: 10,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        urls: [],
+        error: data.error || 'Map failed',
+      };
+    }
+
+    return {
+      success: true,
+      urls: data.links || data.urls || [],
+    };
+  } catch (error) {
+    return {
+      success: false,
+      urls: [],
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+// 複数URLを一括スクレイプ
+export async function scrapeMultipleUrls(urls: string[]): Promise<ScrapeResult[]> {
+  const results = await Promise.all(
+    urls.slice(0, 5).map(url => scrapeWebsite(url))
+  );
+  return results;
 }

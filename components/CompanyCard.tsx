@@ -25,9 +25,9 @@ export function CompanyCard({ company, showAnalysis = false }: CompanyCardProps)
       case "pending":
         return <Badge variant="secondary">未分析</Badge>;
       case "analyzed":
-        return <Badge variant="warning">分析済</Badge>;
+        return <Badge variant="warning">分析済（旧）</Badge>;
       case "scraped":
-        return <Badge variant="default">HP取得済</Badge>;
+        return <Badge variant="default">HP分析済</Badge>;
       case "emailed":
         return <Badge variant="success">メール作成済</Badge>;
       default:

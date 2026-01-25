@@ -120,6 +120,71 @@ JSONのみを返してください。`;
   }
 }
 
+// HP内容を元に企業を分析（精度向上版）
+export async function analyzeCompanyWithContent(
+  companyName: string,
+  businessType: string,
+  websiteContent: string,
+  extractedServices: string[]
+): Promise<AnalysisResult> {
+  const prompt = `あなたは手作業代行サービスの営業担当です。以下の企業のHP内容を分析し、手作業（検品、梱包、仕分け、封入、組立など）を外注するニーズがあるかを判定してください。
+
+企業名: ${companyName}
+業種: ${businessType}
+抽出済みサービス: ${extractedServices.length > 0 ? extractedServices.join(', ') : 'なし'}
+
+HP内容:
+${websiteContent.substring(0, 4000)}
+
+以下の形式でJSONを返してください：
+{
+  "score": 0-100の数値（手作業外注ニーズの可能性スコア）,
+  "reason": "判定理由の説明（HP内容から読み取れた具体的な根拠を含める）",
+  "manualWorkPotential": "想定される手作業の種類（HP内容から特定できた具体的な作業）",
+  "recommendedApproach": "アプローチ方法の提案（企業の特性に合わせた具体的な提案）"
+}
+
+判定基準：
+- HPに物流・倉庫・配送に関する記載がある：検品・梱包・仕分けニーズが高い
+- 製品の製造・加工を行っている：組立・検品ニーズがある可能性
+- ECサイトや通販事業を運営：梱包・発送ニーズが高い
+- 食品を扱っている：パッケージング・仕分けニーズがある可能性
+- 印刷・DM事業：封入・発送作業ニーズが高い
+- 人手不足・繁忙期に関する記載：外注ニーズが高い可能性
+
+JSONのみを返してください。`;
+
+  const message = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1024,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  });
+
+  const responseText = message.content[0].type === 'text'
+    ? message.content[0].text
+    : '';
+
+  try {
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]) as AnalysisResult;
+    }
+    throw new Error('No JSON found in response');
+  } catch {
+    return {
+      score: 50,
+      reason: '分析に失敗しました',
+      manualWorkPotential: '不明',
+      recommendedApproach: '直接お問い合わせください',
+    };
+  }
+}
+
 export async function extractServicesFromContent(
   content: string
 ): Promise<string[]> {

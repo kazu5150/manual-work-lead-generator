@@ -15,11 +15,11 @@ import {
   Phone,
   Globe,
   Star,
-  Brain,
   FileText,
   Loader2,
   Mail,
   ExternalLink,
+  Search,
 } from "lucide-react";
 
 export default function CompanyDetailsPage() {
@@ -31,8 +31,8 @@ export default function CompanyDetailsPage() {
   const [scrapedData, setScrapedData] = useState<ScrapedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
-  const [scraping, setScraping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [analyzeProgress, setAnalyzeProgress] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -72,31 +72,7 @@ export default function CompanyDetailsPage() {
   const handleAnalyze = async () => {
     setAnalyzing(true);
     setError(null);
-
-    try {
-      const response = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companyId }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "分析に失敗しました");
-      }
-
-      setCompany(data.company);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "分析中にエラーが発生しました");
-    } finally {
-      setAnalyzing(false);
-    }
-  };
-
-  const handleScrape = async () => {
-    setScraping(true);
-    setError(null);
+    setAnalyzeProgress("関連ページを検索中...");
 
     try {
       const response = await fetch("/api/scrape", {
@@ -108,15 +84,17 @@ export default function CompanyDetailsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "HP取得に失敗しました");
+        throw new Error(data.error || "HP分析に失敗しました");
       }
 
       setScrapedData(data.data);
-      await fetchData(); // Refresh company data
+      setCompany(data.company);
+      setAnalyzeProgress(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "HP取得中にエラーが発生しました");
+      setError(err instanceof Error ? err.message : "HP分析中にエラーが発生しました");
+      setAnalyzeProgress(null);
     } finally {
-      setScraping(false);
+      setAnalyzing(false);
     }
   };
 
@@ -152,6 +130,21 @@ export default function CompanyDetailsPage() {
         }
       : null;
 
+  const getStatusDisplay = (status: Company["status"]) => {
+    switch (status) {
+      case "emailed":
+        return { label: "メール作成済", variant: "success" as const };
+      case "scraped":
+        return { label: "HP分析済", variant: "default" as const };
+      case "analyzed":
+        return { label: "分析済（旧）", variant: "warning" as const };
+      default:
+        return { label: "未分析", variant: "secondary" as const };
+    }
+  };
+
+  const statusDisplay = getStatusDisplay(company.status);
+
   return (
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => router.back()}>
@@ -177,24 +170,8 @@ export default function CompanyDetailsPage() {
                 {company.name}
               </CardTitle>
               <div className="flex gap-2 mt-2">
-                <Badge
-                  variant={
-                    company.status === "emailed"
-                      ? "success"
-                      : company.status === "scraped"
-                      ? "default"
-                      : company.status === "analyzed"
-                      ? "warning"
-                      : "secondary"
-                  }
-                >
-                  {company.status === "emailed"
-                    ? "メール作成済"
-                    : company.status === "scraped"
-                    ? "HP取得済"
-                    : company.status === "analyzed"
-                    ? "分析済"
-                    : "未分析"}
+                <Badge variant={statusDisplay.variant}>
+                  {statusDisplay.label}
                 </Badge>
                 {company.ai_score !== null && (
                   <Badge
@@ -251,31 +228,24 @@ export default function CompanyDetailsPage() {
 
       {/* Actions */}
       <div className="flex gap-4 flex-wrap">
-        <Button
-          onClick={handleAnalyze}
-          disabled={analyzing}
-          variant={company.ai_score !== null ? "outline" : "default"}
-        >
-          {analyzing ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Brain className="h-4 w-4 mr-2" />
-          )}
-          {company.ai_score !== null ? "再分析" : "AI分析を実行"}
-        </Button>
-
         {company.website && (
           <Button
-            onClick={handleScrape}
-            disabled={scraping}
+            onClick={handleAnalyze}
+            disabled={analyzing}
             variant={scrapedData ? "outline" : "default"}
+            className="min-w-[180px]"
           >
-            {scraping ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            {analyzing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {analyzeProgress || "分析中..."}
+              </>
             ) : (
-              <FileText className="h-4 w-4 mr-2" />
+              <>
+                <Search className="h-4 w-4 mr-2" />
+                {scrapedData ? "HP再分析" : "HP分析を実行"}
+              </>
             )}
-            {scrapedData ? "HP情報を再取得" : "HP情報を取得"}
           </Button>
         )}
 
