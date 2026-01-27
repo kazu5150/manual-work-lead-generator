@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmailPreview } from "@/components/EmailPreview";
-import { Company, Proposal, GeneratedEmail } from "@/types";
+import { useCompany } from "@/hooks/useCompany";
+import { getScoreVariant } from "@/lib/constants";
+import { GeneratedEmail } from "@/types";
 import {
   ArrowLeft,
   Building2,
@@ -21,47 +23,18 @@ export default function ProposalPage() {
   const router = useRouter();
   const companyId = params.id as string;
 
-  const [company, setCompany] = useState<Company | null>(null);
-  const [proposal, setProposal] = useState<Proposal | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    company,
+    proposal,
+    loading,
+    error: fetchError,
+    refetch,
+    setProposal,
+  } = useCompany(companyId);
+
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // Fetch company
-      const companyResponse = await fetch(`/api/companies?id=${companyId}`);
-      const companyData = await companyResponse.json();
-
-      if (!companyData.success || !companyData.company) {
-        setError("企業が見つかりません");
-        return;
-      }
-
-      setCompany(companyData.company);
-
-      // Try to fetch existing proposal
-      try {
-        const proposalResponse = await fetch(`/api/generate-email?companyId=${companyId}`);
-        const proposalData = await proposalResponse.json();
-        if (proposalData.success) {
-          setProposal(proposalData.proposal);
-        }
-      } catch {
-        // Proposal might not exist yet
-      }
-    } catch {
-      setError("データの取得に失敗しました");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [companyId]);
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -81,11 +54,9 @@ export default function ProposalPage() {
       }
 
       setProposal(data.proposal);
-      await fetchData(); // Refresh company data
+      await refetch();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "メール生成中にエラーが発生しました"
-      );
+      setError(err instanceof Error ? err.message : "メール生成中にエラーが発生しました");
     } finally {
       setGenerating(false);
     }
@@ -115,9 +86,7 @@ export default function ProposalPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "保存中にエラーが発生しました"
-      );
+      setError(err instanceof Error ? err.message : "保存中にエラーが発生しました");
     }
   };
 
@@ -133,7 +102,7 @@ export default function ProposalPage() {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">企業が見つかりません</p>
+          <p className="text-muted-foreground">{fetchError || "企業が見つかりません"}</p>
           <Button variant="outline" className="mt-4" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             戻る
@@ -175,15 +144,7 @@ export default function ProposalPage() {
               <Building2 className="h-5 w-5" />
               {company.name}
             </CardTitle>
-            <Badge
-              variant={
-                company.ai_score && company.ai_score >= 70
-                  ? "success"
-                  : company.ai_score && company.ai_score >= 40
-                  ? "warning"
-                  : "secondary"
-              }
-            >
+            <Badge variant={getScoreVariant(company.ai_score)}>
               スコア: {company.ai_score || "-"}
             </Badge>
           </div>

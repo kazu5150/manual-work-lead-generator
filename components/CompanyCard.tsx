@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Company } from "@/types";
+import { STATUS_CONFIG, getScoreVariant } from "@/lib/constants";
 import {
   MapPin,
   Phone,
@@ -20,25 +21,7 @@ interface CompanyCardProps {
 }
 
 export function CompanyCard({ company, showAnalysis = false }: CompanyCardProps) {
-  const getStatusBadge = (status: Company["status"]) => {
-    switch (status) {
-      case "pending":
-        return <Badge variant="secondary" className="whitespace-nowrap">未分析</Badge>;
-      case "scraped":
-        return <Badge variant="default" className="whitespace-nowrap">HP分析済</Badge>;
-      case "emailed":
-        return <Badge variant="success" className="whitespace-nowrap">メール作成済</Badge>;
-      default:
-        return null;
-    }
-  };
-
-  const getScoreBadge = (score: number | null) => {
-    if (score === null) return null;
-    if (score >= 70) return <Badge variant="success" className="whitespace-nowrap">スコア: {score}</Badge>;
-    if (score >= 40) return <Badge variant="warning" className="whitespace-nowrap">スコア: {score}</Badge>;
-    return <Badge variant="secondary" className="whitespace-nowrap">スコア: {score}</Badge>;
-  };
+  const statusConfig = STATUS_CONFIG[company.status];
 
   return (
     <Card className="hover:shadow-lg transition-shadow">
@@ -48,8 +31,14 @@ export function CompanyCard({ company, showAnalysis = false }: CompanyCardProps)
           <span className="line-clamp-2">{company.name}</span>
         </CardTitle>
         <div className="flex flex-wrap gap-1.5 mt-2">
-          {getStatusBadge(company.status)}
-          {showAnalysis && getScoreBadge(company.ai_score)}
+          <Badge variant={statusConfig.badgeVariant} className="whitespace-nowrap">
+            {statusConfig.label}
+          </Badge>
+          {showAnalysis && company.ai_score !== null && (
+            <Badge variant={getScoreVariant(company.ai_score)} className="whitespace-nowrap">
+              スコア: {company.ai_score}
+            </Badge>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-2">

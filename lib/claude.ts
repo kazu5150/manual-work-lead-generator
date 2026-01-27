@@ -1,9 +1,17 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { AnalysisResult, GeneratedEmail } from '@/types';
+import { AnalysisResult, GeneratedEmail } from "@/types";
+import { callClaudeWithJson } from "./claude-utils";
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+const DEFAULT_EMAIL: GeneratedEmail = {
+  subject: "メール生成に失敗しました",
+  body: "メール生成に失敗しました。再度お試しください。",
+};
+
+const DEFAULT_ANALYSIS: AnalysisResult = {
+  score: 50,
+  reason: "分析に失敗しました",
+  manualWorkPotential: "不明",
+  recommendedApproach: "直接お問い合わせください",
+};
 
 export async function generateProposalEmail(
   companyName: string,
@@ -16,7 +24,7 @@ export async function generateProposalEmail(
 企業名: ${companyName}
 企業情報: ${companyInfo}
 HP内容: ${scrapedContent.substring(0, 2000)}
-想定サービス: ${services.join(', ')}
+想定サービス: ${services.join(", ")}
 
 以下の形式でJSONを返してください：
 {
@@ -32,36 +40,23 @@ HP内容: ${scrapedContent.substring(0, 2000)}
 
 JSONのみを返してください。`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2048,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
+  const result = await callClaudeWithJson<GeneratedEmail>(
+    prompt,
+    2048,
+    DEFAULT_EMAIL
+  );
 
-  const responseText = message.content[0].type === 'text'
-    ? message.content[0].text
-    : '';
-
-  try {
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]) as GeneratedEmail;
-    }
-    throw new Error('No JSON found in response');
-  } catch {
+  // 会社名が含まれていない場合はデフォルトの件名を設定
+  if (result.subject === DEFAULT_EMAIL.subject) {
     return {
+      ...result,
       subject: `【手作業代行サービスのご案内】${companyName}様`,
-      body: 'メール生成に失敗しました。再度お試しください。',
     };
   }
+
+  return result;
 }
 
-// HP内容を元に企業を分析（精度向上版）
 export async function analyzeCompanyWithContent(
   companyName: string,
   businessType: string,
@@ -72,7 +67,7 @@ export async function analyzeCompanyWithContent(
 
 企業名: ${companyName}
 業種: ${businessType}
-抽出済みサービス: ${extractedServices.length > 0 ? extractedServices.join(', ') : 'なし'}
+抽出済みサービス: ${extractedServices.length > 0 ? extractedServices.join(", ") : "なし"}
 
 HP内容:
 ${websiteContent.substring(0, 4000)}
@@ -95,35 +90,7 @@ ${websiteContent.substring(0, 4000)}
 
 JSONのみを返してください。`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1024,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
-
-  const responseText = message.content[0].type === 'text'
-    ? message.content[0].text
-    : '';
-
-  try {
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]) as AnalysisResult;
-    }
-    throw new Error('No JSON found in response');
-  } catch {
-    return {
-      score: 50,
-      reason: '分析に失敗しました',
-      manualWorkPotential: '不明',
-      recommendedApproach: '直接お問い合わせください',
-    };
-  }
+  return callClaudeWithJson<AnalysisResult>(prompt, 1024, DEFAULT_ANALYSIS);
 }
 
 export async function extractServicesFromContent(
@@ -147,29 +114,11 @@ ${content.substring(0, 3000)}
 
 JSONのみを返してください。`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 512,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
+  const result = await callClaudeWithJson<{ services: string[] }>(
+    prompt,
+    512,
+    { services: [] }
+  );
 
-  const responseText = message.content[0].type === 'text'
-    ? message.content[0].text
-    : '';
-
-  try {
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const result = JSON.parse(jsonMatch[0]);
-      return result.services || [];
-    }
-    return [];
-  } catch {
-    return [];
-  }
+  return result.services || [];
 }

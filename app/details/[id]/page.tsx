@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AnalysisResult } from "@/components/AnalysisResult";
-import { Company, ScrapedData, AnalysisResult as AnalysisResultType, Proposal } from "@/types";
+import { useCompany } from "@/hooks/useCompany";
+import { STATUS_CONFIG, getScoreVariant } from "@/lib/constants";
+import { AnalysisResult as AnalysisResultType } from "@/types";
 import {
   ArrowLeft,
   Building2,
@@ -27,61 +29,19 @@ export default function CompanyDetailsPage() {
   const router = useRouter();
   const companyId = params.id as string;
 
-  const [company, setCompany] = useState<Company | null>(null);
-  const [scrapedData, setScrapedData] = useState<ScrapedData | null>(null);
-  const [proposal, setProposal] = useState<Proposal | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    company,
+    scrapedData,
+    proposal,
+    loading,
+    error: fetchError,
+    setCompany,
+    setScrapedData,
+  } = useCompany(companyId);
+
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analyzeProgress, setAnalyzeProgress] = useState<string | null>(null);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // Fetch company
-      const companyResponse = await fetch(`/api/companies?id=${companyId}`);
-      const companyData = await companyResponse.json();
-
-      if (!companyData.success || !companyData.company) {
-        setError("企業が見つかりません");
-        return;
-      }
-
-      setCompany(companyData.company);
-
-      // Try to fetch scraped data
-      try {
-        const scrapedResponse = await fetch(`/api/scrape?companyId=${companyId}`);
-        const scrapedDataResult = await scrapedResponse.json();
-        if (scrapedDataResult.success) {
-          setScrapedData(scrapedDataResult.data);
-        }
-      } catch {
-        // Scraped data might not exist yet
-      }
-
-      // Fetch proposal if status is emailed
-      if (companyData.company.status === "emailed") {
-        try {
-          const proposalResponse = await fetch(`/api/generate-email?companyId=${companyId}`);
-          const proposalData = await proposalResponse.json();
-          if (proposalData.success && proposalData.proposal) {
-            setProposal(proposalData.proposal);
-          }
-        } catch {
-          // Proposal might not exist
-        }
-      }
-    } catch {
-      setError("企業データの取得に失敗しました");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [companyId]);
 
   const handleAnalyze = async () => {
     setAnalyzing(true);
@@ -124,7 +84,7 @@ export default function CompanyDetailsPage() {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">企業が見つかりません</p>
+          <p className="text-muted-foreground">{fetchError || "企業が見つかりません"}</p>
           <Button variant="outline" className="mt-4" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             戻る
@@ -144,18 +104,7 @@ export default function CompanyDetailsPage() {
         }
       : null;
 
-  const getStatusDisplay = (status: Company["status"]) => {
-    switch (status) {
-      case "emailed":
-        return { label: "メール作成済", variant: "success" as const };
-      case "scraped":
-        return { label: "HP分析済", variant: "default" as const };
-      default:
-        return { label: "未分析", variant: "secondary" as const };
-    }
-  };
-
-  const statusDisplay = getStatusDisplay(company.status);
+  const statusConfig = STATUS_CONFIG[company.status];
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -182,19 +131,11 @@ export default function CompanyDetailsPage() {
                 {company.name}
               </CardTitle>
               <div className="flex gap-2 mt-2">
-                <Badge variant={statusDisplay.variant}>
-                  {statusDisplay.label}
+                <Badge variant={statusConfig.badgeVariant}>
+                  {statusConfig.label}
                 </Badge>
                 {company.ai_score !== null && (
-                  <Badge
-                    variant={
-                      company.ai_score >= 70
-                        ? "success"
-                        : company.ai_score >= 40
-                        ? "warning"
-                        : "secondary"
-                    }
-                  >
+                  <Badge variant={getScoreVariant(company.ai_score)}>
                     スコア: {company.ai_score}
                   </Badge>
                 )}
