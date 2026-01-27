@@ -72,10 +72,23 @@ function SidebarContent() {
   return (
     <aside
       className={cn(
-        "bg-card border-r h-[calc(100vh-4rem)] sticky top-16 transition-all duration-300",
+        "bg-card border-r h-[calc(100vh-4rem)] sticky top-16 transition-all duration-300 relative",
         collapsed ? "w-16" : "w-56"
       )}
     >
+      {/* トグルボタン */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3 top-6 z-10 flex h-6 w-6 items-center justify-center rounded-full border bg-card shadow-md hover:bg-muted transition-colors"
+        title={collapsed ? "メニューを開く" : "メニューを閉じる"}
+      >
+        {collapsed ? (
+          <ChevronRight className="h-4 w-4" />
+        ) : (
+          <ChevronLeft className="h-4 w-4" />
+        )}
+      </button>
+
       <div className="p-4 flex flex-col h-full">
         <nav className="space-y-1 flex-1">
           {menuItems.map((item) => {
@@ -103,17 +116,6 @@ function SidebarContent() {
             );
           })}
         </nav>
-
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center justify-center p-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
-        </button>
       </div>
     </aside>
   );
