@@ -29,7 +29,6 @@ Google Places API → companies テーブル → HP分析(Search+Map+Scrape+Clau
   2. 見つからなければMap APIでサイト構造から関連ページを特定
   3. 関連ページをスクレイピング
   4. Claude APIでサービス抽出＋手作業ニーズをスコアリング
-- `analyze/` - （旧API、非推奨）Places APIデータのみでの分析
 - `generate-email/` - Claude APIで提案メール生成
 - `companies/` - 企業一覧・詳細取得
 
@@ -42,7 +41,6 @@ Google Places API → companies テーブル → HP分析(Search+Map+Scrape+Clau
 ```
 pending → scraped → emailed
 ```
-※ `analyzed`は旧フローの互換性のため残存
 
 ### 外部API連携 (`lib/`)
 - `google-places.ts` - Text Search API + Place Details API
@@ -55,7 +53,6 @@ pending → scraped → emailed
   - `analyzeCompanyWithContent()` - HP内容ベースの分析（メイン）
   - `extractServicesFromContent()` - サービス抽出
   - `generateProposalEmail()` - メール生成
-  - `analyzeCompany()` - （旧、非推奨）
 
 ### UIコンポーネント
 shadcn/uiベース。`components/ui/`に基本コンポーネント、ルート`components/`にアプリ固有コンポーネント。

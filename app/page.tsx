@@ -10,7 +10,6 @@ import { Company } from "@/types";
 import {
   Search,
   Building2,
-  Brain,
   Globe,
   Mail,
   ArrowRight,
@@ -20,7 +19,6 @@ import {
 interface Stats {
   total: number;
   pending: number;
-  analyzed: number;
   scraped: number;
   emailed: number;
 }
@@ -29,7 +27,6 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats>({
     total: 0,
     pending: 0,
-    analyzed: 0,
     scraped: 0,
     emailed: 0,
   });
@@ -50,7 +47,6 @@ export default function Dashboard() {
         setStats({
           total: companies.length,
           pending: companies.filter((c: Company) => c.status === "pending").length,
-          analyzed: companies.filter((c: Company) => c.status === "analyzed").length,
           scraped: companies.filter((c: Company) => c.status === "scraped").length,
           emailed: companies.filter((c: Company) => c.status === "emailed").length,
         });
@@ -92,13 +88,6 @@ export default function Dashboard() {
       href: "/companies?status=pending",
     },
     {
-      title: "分析済み",
-      value: stats.analyzed,
-      icon: Brain,
-      color: "text-yellow-600",
-      href: "/companies?status=analyzed",
-    },
-    {
       title: "HP取得済み",
       value: stats.scraped,
       icon: Globe,
@@ -138,7 +127,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((stat) => (
           <Link key={stat.title} href={stat.href}>
             <Card className="cursor-pointer hover:bg-muted/50 transition-colors">

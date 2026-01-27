@@ -9,7 +9,6 @@ import { Company } from "@/types";
 import {
   Building2,
   Search,
-  Brain,
   Globe,
   Mail,
   RefreshCw,
@@ -22,12 +21,6 @@ const statusConfig = {
     icon: Search,
     color: "text-gray-600",
     description: "HP分析がまだ行われていない企業",
-  },
-  analyzed: {
-    label: "分析済み（旧）",
-    icon: Brain,
-    color: "text-yellow-600",
-    description: "旧フローで分析された企業",
   },
   scraped: {
     label: "HP取得済み",

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS companies (
   business_type TEXT,
   ai_score INTEGER,
   ai_reason TEXT,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'analyzed', 'scraped', 'emailed')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'scraped', 'emailed')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

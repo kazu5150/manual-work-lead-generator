@@ -150,8 +150,6 @@ export default function CompanyDetailsPage() {
         return { label: "メール作成済", variant: "success" as const };
       case "scraped":
         return { label: "HP分析済", variant: "default" as const };
-      case "analyzed":
-        return { label: "分析済（旧）", variant: "warning" as const };
       default:
         return { label: "未分析", variant: "secondary" as const };
     }

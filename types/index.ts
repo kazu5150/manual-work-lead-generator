@@ -9,7 +9,7 @@ export interface Company {
   business_type: string | null;
   ai_score: number | null;
   ai_reason: string | null;
-  status: 'pending' | 'analyzed' | 'scraped' | 'emailed';
+  status: 'pending' | 'scraped' | 'emailed';
   created_at: string;
   updated_at: string;
 }

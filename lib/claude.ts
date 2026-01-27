@@ -5,65 +5,6 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-export async function analyzeCompany(
-  companyName: string,
-  companyInfo: string,
-  businessType: string
-): Promise<AnalysisResult> {
-  const prompt = `あなたは手作業代行サービスの営業担当です。以下の企業情報を分析し、手作業（検品、梱包、仕分け、封入、組立など）を外注するニーズがあるかを判定してください。
-
-企業名: ${companyName}
-業種: ${businessType}
-情報: ${companyInfo}
-
-以下の形式でJSONを返してください：
-{
-  "score": 0-100の数値（手作業外注ニーズの可能性スコア）,
-  "reason": "判定理由の説明",
-  "manualWorkPotential": "想定される手作業の種類（例：検品作業、梱包作業など）",
-  "recommendedApproach": "アプローチ方法の提案"
-}
-
-判定基準：
-- 物流・倉庫業：検品・梱包・仕分けニーズが高い（スコア高め）
-- 製造業：組立・検品ニーズがある可能性
-- 小売・通販：EC梱包・発送ニーズが高い
-- 食品加工：パッケージングニーズがある可能性
-- 印刷業：封入・発送作業ニーズが高い
-
-JSONのみを返してください。`;
-
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1024,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
-
-  const responseText = message.content[0].type === 'text'
-    ? message.content[0].text
-    : '';
-
-  try {
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]) as AnalysisResult;
-    }
-    throw new Error('No JSON found in response');
-  } catch {
-    return {
-      score: 50,
-      reason: '分析に失敗しました',
-      manualWorkPotential: '不明',
-      recommendedApproach: '直接お問い合わせください',
-    };
-  }
-}
-
 export async function generateProposalEmail(
   companyName: string,
   companyInfo: string,

@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import {
   Building2,
   Search,
-  Brain,
   Globe,
   Mail,
   LayoutDashboard,
@@ -34,13 +33,6 @@ const menuItems = [
     icon: Search,
     status: "pending",
     color: "text-gray-600",
-  },
-  {
-    label: "分析済み（旧）",
-    href: "/companies?status=analyzed",
-    icon: Brain,
-    status: "analyzed",
-    color: "text-yellow-600",
   },
   {
     label: "HP取得済み",

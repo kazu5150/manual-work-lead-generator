@@ -24,8 +24,6 @@ export function CompanyCard({ company, showAnalysis = false }: CompanyCardProps)
     switch (status) {
       case "pending":
         return <Badge variant="secondary">未分析</Badge>;
-      case "analyzed":
-        return <Badge variant="warning">分析済（旧）</Badge>;
       case "scraped":
         return <Badge variant="default">HP分析済</Badge>;
       case "emailed":
