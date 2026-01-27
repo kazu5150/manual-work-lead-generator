@@ -8,6 +8,30 @@ import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, MapPin, Building2 } from "lucide-react";
 import { BUSINESS_TYPES } from "@/types";
+import { Badge } from "@/components/ui/badge";
+
+const SAMPLE_KEYWORDS = [
+  "物流 倉庫",
+  "物流センター",
+  "配送センター",
+  "倉庫業",
+  "梱包 発送",
+  "検品 作業",
+  "仕分け 作業",
+  "アッセンブリ",
+  "組立 加工",
+  "封入 発送",
+  "DM発送",
+  "EC物流",
+  "通販 発送代行",
+  "ピッキング",
+  "シール貼り",
+  "袋詰め",
+  "箱詰め",
+  "ラベル貼り",
+  "検査 梱包",
+  "軽作業 請負",
+];
 
 export function SearchForm() {
   const router = useRouter();
@@ -52,6 +76,21 @@ export function SearchForm() {
               onChange={(e) => setKeyword(e.target.value)}
               required
             />
+            <div className="pt-1">
+              <p className="text-xs text-muted-foreground mb-2">サンプルキーワード（クリックで入力）</p>
+              <div className="flex flex-wrap gap-1.5">
+                {SAMPLE_KEYWORDS.map((sample) => (
+                  <Badge
+                    key={sample}
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs"
+                    onClick={() => setKeyword(sample)}
+                  >
+                    {sample}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
