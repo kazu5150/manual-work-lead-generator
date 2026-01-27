@@ -56,7 +56,7 @@ function SearchContent() {
       <div>
         <h1 className="text-3xl font-bold">企業検索</h1>
         <p className="text-muted-foreground mt-1">
-          Google Places APIを使用して企業を検索します
+          キーワードと地域から新規開拓先を検索します
         </p>
       </div>
 
@@ -118,7 +118,7 @@ export default function SearchPage() {
           <div>
             <h1 className="text-3xl font-bold">企業検索</h1>
             <p className="text-muted-foreground mt-1">
-              Google Places APIを使用して企業を検索します
+              キーワードと地域から新規開拓先を検索します
             </p>
           </div>
           <Card>
