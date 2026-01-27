@@ -59,7 +59,7 @@ npm run build
 
 # 起動（PM2推奨）
 npm install -g pm2
-pm2 start npm --name "marketing-app" -- start
+pm2 start npm --name "kokyaku-kaitaku-ai-navi" -- start
 ```
 
 ---

@@ -8,7 +8,7 @@ import { Sidebar } from "@/components/Sidebar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "マーケティングアプリ - 顧客獲得支援",
+  title: "顧客開拓AIナビ",
   description: "手作業代行サービス向け顧客獲得支援アプリケーション",
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({
               <div className="flex h-16 items-center justify-between">
                 <Link href="/" className="flex items-center gap-2 font-bold text-xl">
                   <BarChart3 className="h-6 w-6 text-primary" />
-                  マーケティングアプリ
+                  顧客開拓AIナビ
                 </Link>
                 <Link
                   href="/search"

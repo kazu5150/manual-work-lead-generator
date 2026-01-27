@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-手作業代行サービス向けの顧客獲得支援アプリ。企業検索→HP分析→提案メール生成のワークフローを提供。
+**顧客開拓AIナビ** - 手作業代行サービス向けの顧客獲得支援アプリ。企業検索→HP分析→提案メール生成のワークフローを提供。
 
 ## コマンド
 
