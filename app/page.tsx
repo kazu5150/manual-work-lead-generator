@@ -145,8 +145,8 @@ export default function Dashboard() {
                 2
               </div>
               <div>
-                <p className="font-medium text-sm">HP分析</p>
-                <p className="text-xs text-muted-foreground">AIが手作業ニーズを分析</p>
+                <p className="font-medium text-sm">HP分析・スコアリング</p>
+                <p className="text-xs text-muted-foreground">AIがニーズを分析し0-100点で評価</p>
               </div>
             </div>
             <ArrowRight className="hidden md:block h-5 w-5 text-muted-foreground flex-shrink-0" />
