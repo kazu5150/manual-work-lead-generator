@@ -14,6 +14,9 @@ import {
   Mail,
   ArrowRight,
   RefreshCw,
+  Sparkles,
+  Target,
+  Zap,
 } from "lucide-react";
 
 interface Stats {
@@ -125,6 +128,44 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {/* Welcome Card */}
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-none">
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex-1">
+              <h2 className="text-xl font-bold flex items-center gap-2 mb-3">
+                <Sparkles className="h-5 w-5 text-primary" />
+                手作業代行サービス向け 顧客獲得支援アプリ
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                企業のホームページをAIが分析し、手作業（検品・梱包・仕分け・封入など）の
+                外注ニーズがある企業を見つけ出します。営業メールも自動生成できます。
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row md:flex-col gap-3 md:w-64">
+              <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600">
+                  <Target className="h-4 w-4" />
+                </div>
+                <span>ターゲット企業を自動発見</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600">
+                  <Zap className="h-4 w-4" />
+                </div>
+                <span>AIがニーズを分析・スコアリング</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600">
+                  <Mail className="h-4 w-4" />
+                </div>
+                <span>提案メールを自動生成</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
