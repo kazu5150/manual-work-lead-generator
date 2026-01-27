@@ -23,7 +23,7 @@ export function AnalysisResult({ result }: AnalysisResultProps) {
   };
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Brain className="h-5 w-5" />
