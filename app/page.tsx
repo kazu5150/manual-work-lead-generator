@@ -242,55 +242,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Workflow Guide */}
-      <Card>
-        <CardHeader>
-          <CardTitle>ワークフロー</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-            <div className="flex items-center gap-2 p-4 bg-muted rounded-lg flex-1">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold">
-                1
-              </div>
-              <div>
-                <p className="font-medium">企業検索</p>
-                <p className="text-sm text-muted-foreground">Google Places API</p>
-              </div>
-            </div>
-            <ArrowRight className="hidden md:block h-5 w-5 text-muted-foreground" />
-            <div className="flex items-center gap-2 p-4 bg-muted rounded-lg flex-1">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold">
-                2
-              </div>
-              <div>
-                <p className="font-medium">AI分析</p>
-                <p className="text-sm text-muted-foreground">Claude API</p>
-              </div>
-            </div>
-            <ArrowRight className="hidden md:block h-5 w-5 text-muted-foreground" />
-            <div className="flex items-center gap-2 p-4 bg-muted rounded-lg flex-1">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold">
-                3
-              </div>
-              <div>
-                <p className="font-medium">HP情報取得</p>
-                <p className="text-sm text-muted-foreground">Firecrawl API</p>
-              </div>
-            </div>
-            <ArrowRight className="hidden md:block h-5 w-5 text-muted-foreground" />
-            <div className="flex items-center gap-2 p-4 bg-muted rounded-lg flex-1">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold">
-                4
-              </div>
-              <div>
-                <p className="font-medium">提案メール生成</p>
-                <p className="text-sm text-muted-foreground">Claude API</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
