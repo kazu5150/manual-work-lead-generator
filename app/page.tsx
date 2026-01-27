@@ -82,30 +82,35 @@ export default function Dashboard() {
       value: stats.total,
       icon: Building2,
       color: "text-blue-600",
+      href: "/companies",
     },
     {
       title: "未分析",
       value: stats.pending,
       icon: Search,
       color: "text-gray-600",
+      href: "/companies?status=pending",
     },
     {
       title: "分析済み",
       value: stats.analyzed,
       icon: Brain,
       color: "text-yellow-600",
+      href: "/companies?status=analyzed",
     },
     {
       title: "HP取得済み",
       value: stats.scraped,
       icon: Globe,
       color: "text-green-600",
+      href: "/companies?status=scraped",
     },
     {
       title: "メール作成済み",
       value: stats.emailed,
       icon: Mail,
       color: "text-purple-600",
+      href: "/companies?status=emailed",
     },
   ];
 
@@ -135,17 +140,19 @@ export default function Dashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {statCards.map((stat) => (
-          <Card key={stat.title}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+          <Link key={stat.title} href={stat.href}>
+            <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl font-bold">{stat.value}</p>
+                  </div>
+                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
                 </div>
-                <stat.icon className={`h-8 w-8 ${stat.color}`} />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 

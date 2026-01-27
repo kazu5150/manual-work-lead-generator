@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AnalysisResult } from "@/components/AnalysisResult";
-import { Company, ScrapedData, AnalysisResult as AnalysisResultType } from "@/types";
+import { Company, ScrapedData, AnalysisResult as AnalysisResultType, Proposal } from "@/types";
 import {
   ArrowLeft,
   Building2,
@@ -29,6 +29,7 @@ export default function CompanyDetailsPage() {
 
   const [company, setCompany] = useState<Company | null>(null);
   const [scrapedData, setScrapedData] = useState<ScrapedData | null>(null);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +58,19 @@ export default function CompanyDetailsPage() {
         }
       } catch {
         // Scraped data might not exist yet
+      }
+
+      // Fetch proposal if status is emailed
+      if (companyData.company.status === "emailed") {
+        try {
+          const proposalResponse = await fetch(`/api/generate-email?companyId=${companyId}`);
+          const proposalData = await proposalResponse.json();
+          if (proposalData.success && proposalData.proposal) {
+            setProposal(proposalData.proposal);
+          }
+        } catch {
+          // Proposal might not exist
+        }
       }
     } catch {
       setError("企業データの取得に失敗しました");
@@ -253,7 +267,7 @@ export default function CompanyDetailsPage() {
           <Link href={`/proposal/${company.id}`}>
             <Button>
               <Mail className="h-4 w-4 mr-2" />
-              提案メール作成
+              {proposal ? "メールを確認・編集" : "提案メール作成"}
             </Button>
           </Link>
         )}
@@ -262,50 +276,84 @@ export default function CompanyDetailsPage() {
       {/* Analysis Result */}
       {analysisResult && <AnalysisResult result={analysisResult} />}
 
-      {/* Scraped Data */}
-      {scrapedData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              HP情報
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {scrapedData.extracted_services &&
-              scrapedData.extracted_services.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium mb-2">抽出されたサービス</p>
-                  <div className="flex flex-wrap gap-2">
-                    {scrapedData.extracted_services.map((service, index) => (
-                      <Badge key={index} variant="outline">
-                        {service}
-                      </Badge>
-                    ))}
+      {/* HP Info & Proposal - 2 column layout */}
+      {(scrapedData || proposal) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Scraped Data */}
+          {scrapedData && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  HP情報
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {scrapedData.extracted_services &&
+                  scrapedData.extracted_services.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-2">抽出されたサービス</p>
+                      <div className="flex flex-wrap gap-2">
+                        {scrapedData.extracted_services.map((service, index) => (
+                          <Badge key={index} variant="outline">
+                            {service}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {scrapedData.manual_work_potential && (
+                  <div>
+                    <p className="text-sm font-medium mb-2">手作業ポテンシャル</p>
+                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                      {scrapedData.manual_work_potential}
+                    </p>
                   </div>
-                </div>
-              )}
+                )}
 
-            {scrapedData.manual_work_potential && (
-              <div>
-                <p className="text-sm font-medium mb-2">手作業ポテンシャル</p>
-                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                  {scrapedData.manual_work_potential}
-                </p>
-              </div>
-            )}
+                {scrapedData.content && (
+                  <div>
+                    <p className="text-sm font-medium mb-2">HP内容（抜粋）</p>
+                    <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md max-h-[400px] overflow-y-auto whitespace-pre-wrap">
+                      {scrapedData.content.substring(0, 2000)}
+                      {scrapedData.content.length > 2000 && "..."}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-            {scrapedData.content && (
-              <div>
-                <p className="text-sm font-medium mb-2">HP内容（抜粋）</p>
-                <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md max-h-[300px] overflow-y-auto whitespace-pre-wrap">
-                  {scrapedData.content.substring(0, 2000)}
-                  {scrapedData.content.length > 2000 && "..."}
+          {/* Proposal Preview */}
+          {proposal && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  作成済みメール
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-1">件名</p>
+                  <p className="text-sm bg-muted p-2 rounded-md">{proposal.subject}</p>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                <div>
+                  <p className="text-sm font-medium mb-1">本文</p>
+                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md max-h-[400px] overflow-y-auto whitespace-pre-wrap">
+                    {proposal.body}
+                  </p>
+                </div>
+                <Link href={`/proposal/${company.id}`}>
+                  <Button variant="outline" className="w-full">
+                    詳細を見る・編集する
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );

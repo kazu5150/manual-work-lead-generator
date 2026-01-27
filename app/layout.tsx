@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
-import { Search, LayoutDashboard, BarChart3 } from "lucide-react";
+import { Search, BarChart3 } from "lucide-react";
+import { Sidebar } from "@/components/Sidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,26 +28,20 @@ export default function RootLayout({
                   <BarChart3 className="h-6 w-6 text-primary" />
                   マーケティングアプリ
                 </Link>
-                <div className="flex items-center gap-4">
-                  <Link
-                    href="/"
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    ダッシュボード
-                  </Link>
-                  <Link
-                    href="/search"
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <Search className="h-4 w-4" />
-                    企業検索
-                  </Link>
-                </div>
+                <Link
+                  href="/search"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Search className="h-4 w-4" />
+                  企業検索
+                </Link>
               </div>
             </div>
           </nav>
-          <main className="container mx-auto px-4 py-8">{children}</main>
+          <div className="flex">
+            <Sidebar />
+            <main className="flex-1 px-6 py-8 overflow-auto">{children}</main>
+          </div>
         </div>
       </body>
     </html>
