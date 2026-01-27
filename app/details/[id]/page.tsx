@@ -158,7 +158,7 @@ export default function CompanyDetailsPage() {
   const statusDisplay = getStatusDisplay(company.status);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <Button variant="ghost" onClick={() => router.back()}>
         <ArrowLeft className="h-4 w-4 mr-2" />
         戻る
