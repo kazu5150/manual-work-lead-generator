@@ -48,6 +48,58 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 
 Supabaseのプロジェクトを作成し、`supabase/schema.sql`のSQLを実行してテーブルを作成してください。
 
+#### テーブル構造
+
+**companies** - 企業情報
+
+| カラム | 型 | 説明 |
+|--------|------|------|
+| id | UUID | 主キー |
+| place_id | TEXT | Google Places ID（ユニーク） |
+| name | TEXT | 企業名 |
+| address | TEXT | 住所 |
+| phone | TEXT | 電話番号 |
+| website | TEXT | Webサイト |
+| rating | DECIMAL | Google評価 |
+| business_type | TEXT | 業種 |
+| ai_score | INTEGER | AIスコア（0-100） |
+| ai_reason | TEXT | AI判定理由 |
+| status | TEXT | ステータス（pending/scraped/emailed） |
+| created_at | TIMESTAMP | 作成日時 |
+| updated_at | TIMESTAMP | 更新日時 |
+
+**scraped_data** - HP情報
+
+| カラム | 型 | 説明 |
+|--------|------|------|
+| id | UUID | 主キー |
+| company_id | UUID | 企業ID（外部キー） |
+| url | TEXT | スクレイピングしたURL |
+| content | TEXT | HP内容 |
+| extracted_services | TEXT[] | 抽出されたサービス一覧 |
+| manual_work_potential | TEXT | 手作業ポテンシャル説明 |
+| created_at | TIMESTAMP | 作成日時 |
+
+**proposals** - 提案メール
+
+| カラム | 型 | 説明 |
+|--------|------|------|
+| id | UUID | 主キー |
+| company_id | UUID | 企業ID（外部キー） |
+| subject | TEXT | メール件名 |
+| body | TEXT | メール本文 |
+| status | TEXT | ステータス（draft/sent） |
+| created_at | TIMESTAMP | 作成日時 |
+
+#### リレーション
+
+```
+companies (1) ─── (1) scraped_data
+companies (1) ─── (1) proposals
+```
+
+※ `scraped_data`と`proposals`は`company_id`で`companies`に紐づき、企業削除時に連動削除（CASCADE）されます。
+
 ### 4. 開発サーバーの起動
 
 ```bash
