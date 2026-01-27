@@ -23,11 +23,11 @@ export function CompanyCard({ company, showAnalysis = false }: CompanyCardProps)
   const getStatusBadge = (status: Company["status"]) => {
     switch (status) {
       case "pending":
-        return <Badge variant="secondary">未分析</Badge>;
+        return <Badge variant="secondary" className="whitespace-nowrap">未分析</Badge>;
       case "scraped":
-        return <Badge variant="default">HP分析済</Badge>;
+        return <Badge variant="default" className="whitespace-nowrap">HP分析済</Badge>;
       case "emailed":
-        return <Badge variant="success">メール作成済</Badge>;
+        return <Badge variant="success" className="whitespace-nowrap">メール作成済</Badge>;
       default:
         return null;
     }
@@ -35,23 +35,21 @@ export function CompanyCard({ company, showAnalysis = false }: CompanyCardProps)
 
   const getScoreBadge = (score: number | null) => {
     if (score === null) return null;
-    if (score >= 70) return <Badge variant="success">高スコア: {score}</Badge>;
-    if (score >= 40) return <Badge variant="warning">中スコア: {score}</Badge>;
-    return <Badge variant="secondary">低スコア: {score}</Badge>;
+    if (score >= 70) return <Badge variant="success" className="whitespace-nowrap">スコア: {score}</Badge>;
+    if (score >= 40) return <Badge variant="warning" className="whitespace-nowrap">スコア: {score}</Badge>;
+    return <Badge variant="secondary" className="whitespace-nowrap">スコア: {score}</Badge>;
   };
 
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-muted-foreground" />
-            {company.name}
-          </CardTitle>
-          <div className="flex gap-2">
-            {getStatusBadge(company.status)}
-            {showAnalysis && getScoreBadge(company.ai_score)}
-          </div>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Building2 className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          <span className="line-clamp-2">{company.name}</span>
+        </CardTitle>
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {getStatusBadge(company.status)}
+          {showAnalysis && getScoreBadge(company.ai_score)}
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
