@@ -14,9 +14,6 @@ import {
   Mail,
   ArrowRight,
   RefreshCw,
-  Sparkles,
-  Target,
-  Zap,
 } from "lucide-react";
 
 interface Stats {
@@ -129,38 +126,37 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Welcome Card */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-none">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-1">
-              <h2 className="text-xl font-bold flex items-center gap-2 mb-3">
-                <Sparkles className="h-5 w-5 text-primary" />
-                手作業代行サービス向け 顧客獲得支援アプリ
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                企業のホームページをAIが分析し、手作業（検品・梱包・仕分け・封入など）の
-                外注ニーズがある企業を見つけ出します。営業メールも自動生成できます。
-              </p>
+      {/* Workflow */}
+      <Card>
+        <CardContent className="py-4">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-2">
+            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg flex-1">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 text-white font-bold text-sm">
+                1
+              </div>
+              <div>
+                <p className="font-medium text-sm">企業検索</p>
+                <p className="text-xs text-muted-foreground">キーワードで企業を検索</p>
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row md:flex-col gap-3 md:w-64">
-              <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600">
-                  <Target className="h-4 w-4" />
-                </div>
-                <span>ターゲット企業を自動発見</span>
+            <ArrowRight className="hidden md:block h-5 w-5 text-muted-foreground flex-shrink-0" />
+            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg flex-1">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white font-bold text-sm">
+                2
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600">
-                  <Zap className="h-4 w-4" />
-                </div>
-                <span>AIがニーズを分析・スコアリング</span>
+              <div>
+                <p className="font-medium text-sm">HP分析</p>
+                <p className="text-xs text-muted-foreground">AIが手作業ニーズを分析</p>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600">
-                  <Mail className="h-4 w-4" />
-                </div>
-                <span>提案メールを自動生成</span>
+            </div>
+            <ArrowRight className="hidden md:block h-5 w-5 text-muted-foreground flex-shrink-0" />
+            <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg flex-1">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-500 text-white font-bold text-sm">
+                3
+              </div>
+              <div>
+                <p className="font-medium text-sm">メール作成</p>
+                <p className="text-xs text-muted-foreground">提案メールを自動生成</p>
               </div>
             </div>
           </div>
