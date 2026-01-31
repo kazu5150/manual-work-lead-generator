@@ -9,9 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Company } from "@/types";
 import { Search, Loader2 } from "lucide-react";
 
+interface SearchResult {
+  companies: Company[];
+  totalFound: number;
+  excludedCount: number;
+}
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [searchStats, setSearchStats] = useState<{ totalFound: number; excludedCount: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +35,7 @@ function SearchContent() {
   const performSearch = async () => {
     setLoading(true);
     setError(null);
+    setSearchStats(null);
 
     try {
       const params = new URLSearchParams({
@@ -44,6 +52,10 @@ function SearchContent() {
       }
 
       setCompanies(data.companies || []);
+      setSearchStats({
+        totalFound: data.totalFound || 0,
+        excludedCount: data.excludedCount || 0,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "検索中にエラーが発生しました");
     } finally {
@@ -81,9 +93,16 @@ function SearchContent() {
 
       {!loading && companies.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">
-            検索結果: {companies.length}件
-          </h2>
+          <div>
+            <h2 className="text-xl font-semibold">
+              検索結果: {companies.length}件
+              {searchStats && searchStats.excludedCount > 0 && (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  （HP無し {searchStats.excludedCount}件 除外）
+                </span>
+              )}
+            </h2>
+          </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {companies.map((company) => (
@@ -101,7 +120,13 @@ function SearchContent() {
           <CardContent className="py-12 text-center">
             <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
-              検索条件に一致する企業が見つかりませんでした
+              {searchStats && searchStats.excludedCount > 0 ? (
+                <>
+                  {searchStats.totalFound}件見つかりましたが、すべてHP無しのため除外されました
+                </>
+              ) : (
+                <>検索条件に一致する企業が見つかりませんでした</>
+              )}
             </p>
           </CardContent>
         </Card>

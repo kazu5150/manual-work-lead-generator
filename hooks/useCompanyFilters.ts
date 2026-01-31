@@ -18,6 +18,7 @@ export function useCompanyFilters({ companies, urlStatus }: UseCompanyFiltersPro
   const [statusFilter, setStatusFilter] = useState<CompanyStatus | "all">("all");
   const [keywordFilter, setKeywordFilter] = useState<string>("all");
   const [areaFilter, setAreaFilter] = useState<string>("all");
+  const [hideNoWebsite, setHideNoWebsite] = useState(true); // デフォルトでHP無し企業を非表示
 
   // Sort
   const [sortField, setSortField] = useState<SortField>("created_at");
@@ -44,6 +45,11 @@ export function useCompanyFilters({ companies, urlStatus }: UseCompanyFiltersPro
   // Filter and sort companies
   const filteredCompanies = useMemo(() => {
     let result = [...companies];
+
+    // Hide companies without website
+    if (hideNoWebsite) {
+      result = result.filter((company) => company.website);
+    }
 
     // Status filter (only if not filtered by URL)
     if (!urlStatus && statusFilter !== "all") {
@@ -98,7 +104,7 @@ export function useCompanyFilters({ companies, urlStatus }: UseCompanyFiltersPro
     });
 
     return result;
-  }, [companies, urlStatus, statusFilter, keywordFilter, areaFilter, searchQuery, sortField, sortOrder]);
+  }, [companies, urlStatus, hideNoWebsite, statusFilter, keywordFilter, areaFilter, searchQuery, sortField, sortOrder]);
 
   // Pagination
   const totalPages = Math.ceil(filteredCompanies.length / itemsPerPage);
@@ -128,6 +134,11 @@ export function useCompanyFilters({ companies, urlStatus }: UseCompanyFiltersPro
     setCurrentPage(1);
   };
 
+  const handleHideNoWebsiteChange = (value: boolean) => {
+    setHideNoWebsite(value);
+    setCurrentPage(1);
+  };
+
   const handleItemsPerPageChange = (value: number) => {
     setItemsPerPage(value);
     setCurrentPage(1);
@@ -148,6 +159,7 @@ export function useCompanyFilters({ companies, urlStatus }: UseCompanyFiltersPro
     statusFilter,
     keywordFilter,
     areaFilter,
+    hideNoWebsite,
     sortField,
     sortOrder,
     currentPage,
@@ -163,6 +175,7 @@ export function useCompanyFilters({ companies, urlStatus }: UseCompanyFiltersPro
     handleStatusFilterChange,
     handleKeywordFilterChange,
     handleAreaFilterChange,
+    handleHideNoWebsiteChange,
     handleItemsPerPageChange,
     handleSort,
     setCurrentPage,
