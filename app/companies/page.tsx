@@ -37,6 +37,7 @@ function CompaniesContent() {
     statusFilter,
     keywordFilter,
     areaFilter,
+    hideNoWebsite,
     sortField,
     sortOrder,
     currentPage,
@@ -50,6 +51,7 @@ function CompaniesContent() {
     handleStatusFilterChange,
     handleKeywordFilterChange,
     handleAreaFilterChange,
+    handleHideNoWebsiteChange,
     handleItemsPerPageChange,
     handleSort,
     setCurrentPage,
@@ -126,6 +128,15 @@ function CompaniesContent() {
               ))}
             </select>
           )}
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hideNoWebsite}
+              onChange={(e) => handleHideNoWebsiteChange(e.target.checked)}
+              className="rounded border-input"
+            />
+            HP無し企業を除外
+          </label>
         </div>
 
         {/* View Options */}

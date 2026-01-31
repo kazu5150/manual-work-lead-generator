@@ -19,9 +19,13 @@ export async function GET(request: NextRequest) {
     // Search using Google Places API
     const places = await searchPlaces(keyword, location);
 
-    // Save to database
+    // Filter out companies without website
+    const placesWithWebsite = places.filter((place) => place.website);
+    const excludedCount = places.length - placesWithWebsite.length;
+
+    // Save to database (only companies with website)
     const companies = await Promise.all(
-      places.map(async (place) => {
+      placesWithWebsite.map(async (place) => {
         const companyData = {
           place_id: place.place_id,
           name: place.name,
@@ -59,6 +63,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       count: savedCompanies.length,
+      totalFound: places.length,
+      excludedCount,
       companies: savedCompanies,
     });
   } catch (error) {
