@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useMemo } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { CompanyCard } from "@/components/CompanyCard";
 import { CompanyTable } from "@/components/CompanyTable";
 import { useCompanies } from "@/hooks/useCompany";
+import { useCompanyFilters } from "@/hooks/useCompanyFilters";
 import { STATUS_CONFIG, CompanyStatus } from "@/lib/constants";
-import { Company } from "@/types";
 import {
   Building2,
   RefreshCw,
@@ -22,157 +22,43 @@ import {
 } from "lucide-react";
 
 type ViewMode = "card" | "table";
-type SortField = "name" | "ai_score" | "status" | "created_at";
-type SortOrder = "asc" | "desc";
 
 const ITEMS_PER_PAGE_OPTIONS = [20, 50, 100];
 
 function CompaniesContent() {
   const searchParams = useSearchParams();
   const status = searchParams.get("status") as CompanyStatus | null;
-
   const { companies, loading, refetch } = useCompanies(status || undefined);
 
-  // View mode
   const [viewMode, setViewMode] = useState<ViewMode>("card");
 
-  // Search
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Status filter (separate from URL param)
-  const [statusFilter, setStatusFilter] = useState<CompanyStatus | "all">("all");
-
-  // Keyword and Area filters
-  const [keywordFilter, setKeywordFilter] = useState<string>("all");
-  const [areaFilter, setAreaFilter] = useState<string>("all");
-
-  // Sort
-  const [sortField, setSortField] = useState<SortField>("created_at");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const {
+    searchQuery,
+    statusFilter,
+    keywordFilter,
+    areaFilter,
+    sortField,
+    sortOrder,
+    currentPage,
+    itemsPerPage,
+    uniqueKeywords,
+    uniqueAreas,
+    filteredCompanies,
+    paginatedCompanies,
+    totalPages,
+    handleSearchChange,
+    handleStatusFilterChange,
+    handleKeywordFilterChange,
+    handleAreaFilterChange,
+    handleItemsPerPageChange,
+    handleSort,
+    setCurrentPage,
+  } = useCompanyFilters({ companies, urlStatus: status });
 
   const config = status ? STATUS_CONFIG[status] : null;
   const Icon = config?.icon || Building2;
   const title = config?.label || "全企業";
   const description = config?.description || "登録されているすべての企業";
-
-  // Get unique keywords and areas for filter options
-  const { uniqueKeywords, uniqueAreas } = useMemo(() => {
-    const keywords = new Set<string>();
-    const areas = new Set<string>();
-    companies.forEach((company) => {
-      if (company.search_keyword) keywords.add(company.search_keyword);
-      if (company.search_area) areas.add(company.search_area);
-    });
-    return {
-      uniqueKeywords: Array.from(keywords).sort((a, b) => a.localeCompare(b, "ja")),
-      uniqueAreas: Array.from(areas).sort((a, b) => a.localeCompare(b, "ja")),
-    };
-  }, [companies]);
-
-  // Filter and sort companies
-  const filteredAndSortedCompanies = useMemo(() => {
-    let result = [...companies];
-
-    // Status filter
-    if (statusFilter !== "all") {
-      result = result.filter((company) => company.status === statusFilter);
-    }
-
-    // Keyword filter
-    if (keywordFilter !== "all") {
-      result = result.filter((company) => company.search_keyword === keywordFilter);
-    }
-
-    // Area filter
-    if (areaFilter !== "all") {
-      result = result.filter((company) => company.search_area === areaFilter);
-    }
-
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (company) =>
-          company.name.toLowerCase().includes(query) ||
-          company.address?.toLowerCase().includes(query) ||
-          company.phone?.includes(query)
-      );
-    }
-
-    // Sort
-    result.sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortField) {
-        case "name":
-          comparison = a.name.localeCompare(b.name, "ja");
-          break;
-        case "ai_score":
-          const scoreA = a.ai_score ?? -1;
-          const scoreB = b.ai_score ?? -1;
-          comparison = scoreA - scoreB;
-          break;
-        case "status":
-          const statusOrder = { pending: 0, scraped: 1, emailed: 2 };
-          comparison = statusOrder[a.status] - statusOrder[b.status];
-          break;
-        case "created_at":
-          comparison =
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-          break;
-      }
-
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
-
-    return result;
-  }, [companies, statusFilter, keywordFilter, areaFilter, searchQuery, sortField, sortOrder]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredAndSortedCompanies.length / itemsPerPage);
-  const paginatedCompanies = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredAndSortedCompanies.slice(start, start + itemsPerPage);
-  }, [filteredAndSortedCompanies, currentPage, itemsPerPage]);
-
-  // Reset to page 1 when filters change
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    setCurrentPage(1);
-  };
-
-  const handleStatusFilterChange = (value: CompanyStatus | "all") => {
-    setStatusFilter(value);
-    setCurrentPage(1);
-  };
-
-  const handleKeywordFilterChange = (value: string) => {
-    setKeywordFilter(value);
-    setCurrentPage(1);
-  };
-
-  const handleAreaFilterChange = (value: string) => {
-    setAreaFilter(value);
-    setCurrentPage(1);
-  };
-
-  const handleItemsPerPageChange = (value: number) => {
-    setItemsPerPage(value);
-    setCurrentPage(1);
-  };
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("desc");
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -193,8 +79,8 @@ function CompaniesContent() {
 
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        {/* Search and Status Filter */}
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto flex-wrap">
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -204,13 +90,10 @@ function CompaniesContent() {
               className="pl-9"
             />
           </div>
-          {/* Status Filter - only show when not filtered by URL */}
           {!status && (
             <select
               value={statusFilter}
-              onChange={(e) =>
-                handleStatusFilterChange(e.target.value as CompanyStatus | "all")
-              }
+              onChange={(e) => handleStatusFilterChange(e.target.value as CompanyStatus | "all")}
               className="h-9 rounded-md border border-input bg-background px-3 text-sm"
             >
               <option value="all">すべてのステータス</option>
@@ -219,7 +102,6 @@ function CompaniesContent() {
               <option value="emailed">{STATUS_CONFIG.emailed.label}</option>
             </select>
           )}
-          {/* Keyword Filter */}
           {uniqueKeywords.length > 0 && (
             <select
               value={keywordFilter}
@@ -228,13 +110,10 @@ function CompaniesContent() {
             >
               <option value="all">すべてのキーワード</option>
               {uniqueKeywords.map((keyword) => (
-                <option key={keyword} value={keyword}>
-                  {keyword}
-                </option>
+                <option key={keyword} value={keyword}>{keyword}</option>
               ))}
             </select>
           )}
-          {/* Area Filter */}
           {uniqueAreas.length > 0 && (
             <select
               value={areaFilter}
@@ -243,16 +122,14 @@ function CompaniesContent() {
             >
               <option value="all">すべてのエリア</option>
               {uniqueAreas.map((area) => (
-                <option key={area} value={area}>
-                  {area}
-                </option>
+                <option key={area} value={area}>{area}</option>
               ))}
             </select>
           )}
         </div>
 
+        {/* View Options */}
         <div className="flex items-center gap-4">
-          {/* Items per page */}
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">表示:</span>
             <select
@@ -261,14 +138,10 @@ function CompaniesContent() {
               className="h-9 rounded-md border border-input bg-background px-3 text-sm"
             >
               {ITEMS_PER_PAGE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}件
-                </option>
+                <option key={option} value={option}>{option}件</option>
               ))}
             </select>
           </div>
-
-          {/* View mode toggle */}
           <div className="flex items-center border rounded-md">
             <Button
               variant={viewMode === "card" ? "secondary" : "ghost"}
@@ -292,10 +165,9 @@ function CompaniesContent() {
 
       {/* Count */}
       <div className="text-sm text-muted-foreground">
-        {filteredAndSortedCompanies.length} 件
-        {searchQuery && ` (検索結果)`}
-        {filteredAndSortedCompanies.length !== companies.length &&
-          ` / 全 ${companies.length} 件`}
+        {filteredCompanies.length} 件
+        {searchQuery && " (検索結果)"}
+        {filteredCompanies.length !== companies.length && ` / 全 ${companies.length} 件`}
       </div>
 
       {/* Content */}
@@ -329,62 +201,13 @@ function CompaniesContent() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-4">
-              <div className="text-sm text-muted-foreground">
-                {(currentPage - 1) * itemsPerPage + 1} -{" "}
-                {Math.min(currentPage * itemsPerPage, filteredAndSortedCompanies.length)}{" "}
-                / {filteredAndSortedCompanies.length} 件
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter((page) => {
-                      // Show first, last, and pages around current
-                      return (
-                        page === 1 ||
-                        page === totalPages ||
-                        Math.abs(page - currentPage) <= 1
-                      );
-                    })
-                    .map((page, index, array) => {
-                      // Add ellipsis
-                      const prev = array[index - 1];
-                      const showEllipsis = prev && page - prev > 1;
-                      return (
-                        <span key={page} className="flex items-center">
-                          {showEllipsis && (
-                            <span className="px-2 text-muted-foreground">...</span>
-                          )}
-                          <Button
-                            variant={currentPage === page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className="w-9"
-                          >
-                            {page}
-                          </Button>
-                        </span>
-                      );
-                    })}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredCompanies.length}
+              onPageChange={setCurrentPage}
+            />
           )}
         </>
       ) : (
@@ -397,6 +220,72 @@ function CompaniesContent() {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+function Pagination({
+  currentPage,
+  totalPages,
+  itemsPerPage,
+  totalItems,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+}) {
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  const visiblePages = Array.from({ length: totalPages }, (_, i) => i + 1).filter(
+    (page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1
+  );
+
+  return (
+    <div className="flex items-center justify-between pt-4">
+      <div className="text-sm text-muted-foreground">
+        {startItem} - {endItem} / {totalItems} 件
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div className="flex items-center gap-1">
+          {visiblePages.map((page, index, array) => {
+            const prev = array[index - 1];
+            const showEllipsis = prev && page - prev > 1;
+            return (
+              <span key={page} className="flex items-center">
+                {showEllipsis && <span className="px-2 text-muted-foreground">...</span>}
+                <Button
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onPageChange(page)}
+                  className="w-9"
+                >
+                  {page}
+                </Button>
+              </span>
+            );
+          })}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
