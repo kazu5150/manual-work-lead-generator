@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { AnalysisResult } from "@/components/AnalysisResult";
 import { useCompany } from "@/hooks/useCompany";
 import { STATUS_CONFIG, getScoreVariant } from "@/lib/constants";
-import { AnalysisResult as AnalysisResultType } from "@/types";
+import { AnalysisResult as AnalysisResultType, BUSINESS_TYPES } from "@/types";
 import {
   ArrowLeft,
   Building2,
@@ -174,6 +174,18 @@ export default function CompanyDetailsPage() {
             <div className="flex items-center gap-2 text-muted-foreground">
               <Star className="h-4 w-4 text-yellow-500" />
               {company.rating.toFixed(1)}
+            </div>
+          )}
+          {(company.search_keyword || company.search_area || company.business_type) && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Search className="h-4 w-4" />
+              <span>
+                検索条件: {[
+                  company.search_keyword,
+                  company.search_area,
+                  company.business_type && BUSINESS_TYPES.find(b => b.value === company.business_type)?.label
+                ].filter(Boolean).join(" / ")}
+              </span>
             </div>
           )}
         </CardContent>

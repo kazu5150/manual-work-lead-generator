@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Company } from "@/types";
 import { STATUS_CONFIG, getScoreVariant } from "@/lib/constants";
+import { BUSINESS_TYPES } from "@/types";
 import {
   MapPin,
   Phone,
@@ -13,6 +14,7 @@ import {
   Star,
   ArrowRight,
   Building2,
+  Search,
 } from "lucide-react";
 
 interface CompanyCardProps {
@@ -71,6 +73,18 @@ export function CompanyCard({ company, showAnalysis = false }: CompanyCardProps)
           <p className="text-sm text-muted-foreground flex items-center gap-2">
             <Star className="h-4 w-4 text-yellow-500" />
             {company.rating.toFixed(1)}
+          </p>
+        )}
+        {(company.search_keyword || company.search_area || company.business_type) && (
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            <span className="truncate">
+              {[
+                company.search_keyword,
+                company.search_area,
+                company.business_type && BUSINESS_TYPES.find(b => b.value === company.business_type)?.label
+              ].filter(Boolean).join(" / ")}
+            </span>
           </p>
         )}
         {showAnalysis && company.ai_reason && (

@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS companies (
   website TEXT,
   rating DECIMAL,
   business_type TEXT,
+  search_keyword TEXT,
+  search_area TEXT,
   ai_score INTEGER,
   ai_reason TEXT,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'scraped', 'emailed')),
