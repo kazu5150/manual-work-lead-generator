@@ -31,17 +31,26 @@ export function AnalysisResult({ result }: AnalysisResultProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-start gap-4 flex-wrap">
           <div
-            className={`px-6 py-3 rounded-lg ${getScoreBg(result.score)} text-center`}
+            className={`px-6 py-3 rounded-lg ${getScoreBg(result.score)} text-center min-w-[100px]`}
           >
-            <p className="text-xs text-muted-foreground mb-1">スコア</p>
+            <p className="text-xs text-muted-foreground mb-1">外注ニーズ</p>
             <p className={`text-3xl font-bold ${getScoreColor(result.score)}`}>
               {result.score}
               <span className="text-sm text-muted-foreground">/100</span>
             </p>
           </div>
-          <div className="flex-1">
+          <div
+            className={`px-6 py-3 rounded-lg ${getScoreBg(result.partnerScore)} text-center min-w-[100px]`}
+          >
+            <p className="text-xs text-muted-foreground mb-1">パートナー</p>
+            <p className={`text-3xl font-bold ${getScoreColor(result.partnerScore)}`}>
+              {result.partnerScore}
+              <span className="text-sm text-muted-foreground">/100</span>
+            </p>
+          </div>
+          <div className="flex-1 min-w-[200px]">
             <p className="text-sm font-medium flex items-center gap-2 mb-1">
               <Target className="h-4 w-4" />
               判定理由

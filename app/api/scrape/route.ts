@@ -63,6 +63,8 @@ export async function POST(request: NextRequest) {
       .update({
         ai_score: analysisData.analysis.score,
         ai_reason: analysisData.analysis.reason,
+        partner_score: analysisData.analysis.partnerScore,
+        company_type: analysisData.analysis.companyType,
         status: "scraped",
         updated_at: new Date().toISOString(),
       })

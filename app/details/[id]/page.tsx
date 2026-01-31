@@ -98,6 +98,8 @@ export default function CompanyDetailsPage() {
     company.ai_score !== null
       ? {
           score: company.ai_score,
+          partnerScore: company.partner_score ?? 0,
+          companyType: company.company_type ?? "unknown",
           reason: company.ai_reason || "",
           manualWorkPotential: scrapedData?.manual_work_potential || "不明",
           recommendedApproach: "詳細はHP情報を取得してください",
@@ -130,13 +132,24 @@ export default function CompanyDetailsPage() {
                 <Building2 className="h-6 w-6" />
                 {company.name}
               </CardTitle>
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-2 flex-wrap">
                 <Badge variant={statusConfig.badgeVariant}>
                   {statusConfig.label}
                 </Badge>
+                {company.company_type && (
+                  <Badge variant={company.company_type === "partner" ? "default" : "secondary"}>
+                    {company.company_type === "outsource" ? "外注検討企業" :
+                     company.company_type === "partner" ? "パートナー候補" : "未分類"}
+                  </Badge>
+                )}
                 {company.ai_score !== null && (
                   <Badge variant={getScoreVariant(company.ai_score)}>
-                    スコア: {company.ai_score}
+                    外注ニーズ: {company.ai_score}
+                  </Badge>
+                )}
+                {company.partner_score !== null && (
+                  <Badge variant={getScoreVariant(company.partner_score)}>
+                    パートナー: {company.partner_score}
                   </Badge>
                 )}
               </div>

@@ -63,9 +63,11 @@ export function CompanyTable({
             </TableHead>
             <TableHead className="hidden md:table-cell">住所</TableHead>
             <TableHead className="hidden lg:table-cell">電話番号</TableHead>
+            <TableHead className="hidden sm:table-cell">タイプ</TableHead>
             <TableHead>
-              <SortButton field="ai_score">スコア</SortButton>
+              <SortButton field="ai_score">外注</SortButton>
             </TableHead>
+            <TableHead className="hidden sm:table-cell">パートナー</TableHead>
             <TableHead>
               <SortButton field="status">ステータス</SortButton>
             </TableHead>
@@ -78,7 +80,7 @@ export function CompanyTable({
         <TableBody>
           {companies.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="h-24 text-center">
+              <TableCell colSpan={11} className="h-24 text-center">
                 該当する企業がありません
               </TableCell>
             </TableRow>
@@ -100,10 +102,29 @@ export function CompanyTable({
                       {company.phone || "-"}
                     </span>
                   </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {company.company_type ? (
+                      <Badge variant={company.company_type === "partner" ? "default" : "secondary"}>
+                        {company.company_type === "outsource" ? "外注検討" :
+                         company.company_type === "partner" ? "パートナー" : "未分類"}
+                      </Badge>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {company.ai_score !== null ? (
                       <Badge variant={getScoreVariant(company.ai_score)}>
                         {company.ai_score}
+                      </Badge>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {company.partner_score !== null ? (
+                      <Badge variant={getScoreVariant(company.partner_score)}>
+                        {company.partner_score}
                       </Badge>
                     ) : (
                       <span className="text-sm text-muted-foreground">-</span>

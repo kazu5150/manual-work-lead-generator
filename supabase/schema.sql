@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS companies (
   search_area TEXT,
   ai_score INTEGER,
   ai_reason TEXT,
+  partner_score INTEGER,
+  company_type TEXT CHECK (company_type IN ('outsource', 'partner', 'unknown')),
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'scraped', 'emailed')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
