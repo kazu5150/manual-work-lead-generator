@@ -1,3 +1,5 @@
+export type CompanyType = 'outsource' | 'partner' | 'unknown';
+
 export interface Company {
   id: string;
   place_id: string | null;
@@ -11,6 +13,8 @@ export interface Company {
   search_area: string | null;
   ai_score: number | null;
   ai_reason: string | null;
+  partner_score: number | null;
+  company_type: CompanyType | null;
   status: 'pending' | 'scraped' | 'emailed';
   created_at: string;
   updated_at: string;
@@ -53,6 +57,8 @@ export interface SearchParams {
 
 export interface AnalysisResult {
   score: number;
+  partnerScore: number;
+  companyType: CompanyType;
   reason: string;
   manualWorkPotential: string;
   recommendedApproach: string;

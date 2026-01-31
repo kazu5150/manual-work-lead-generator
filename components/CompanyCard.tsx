@@ -36,9 +36,20 @@ export function CompanyCard({ company, showAnalysis = false }: CompanyCardProps)
           <Badge variant={statusConfig.badgeVariant} className="whitespace-nowrap">
             {statusConfig.label}
           </Badge>
+          {showAnalysis && company.company_type && (
+            <Badge variant={company.company_type === "partner" ? "default" : "secondary"} className="whitespace-nowrap">
+              {company.company_type === "outsource" ? "外注検討" :
+               company.company_type === "partner" ? "パートナー" : "未分類"}
+            </Badge>
+          )}
           {showAnalysis && company.ai_score !== null && (
             <Badge variant={getScoreVariant(company.ai_score)} className="whitespace-nowrap">
-              スコア: {company.ai_score}
+              外注: {company.ai_score}
+            </Badge>
+          )}
+          {showAnalysis && company.partner_score !== null && (
+            <Badge variant={getScoreVariant(company.partner_score)} className="whitespace-nowrap">
+              パートナー: {company.partner_score}
             </Badge>
           )}
         </div>
