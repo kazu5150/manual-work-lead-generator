@@ -70,13 +70,15 @@ export function CompanyTable({
               <SortButton field="status">ステータス</SortButton>
             </TableHead>
             <TableHead className="hidden sm:table-cell">HP</TableHead>
+            <TableHead className="hidden lg:table-cell">キーワード</TableHead>
+            <TableHead className="hidden lg:table-cell">エリア</TableHead>
             <TableHead className="w-[80px]">操作</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {companies.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
+              <TableCell colSpan={9} className="h-24 text-center">
                 該当する企業がありません
               </TableCell>
             </TableRow>
@@ -125,6 +127,16 @@ export function CompanyTable({
                     ) : (
                       <span className="text-sm text-muted-foreground">-</span>
                     )}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    <span className="text-sm text-muted-foreground line-clamp-1">
+                      {company.search_keyword || "-"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    <span className="text-sm text-muted-foreground line-clamp-1">
+                      {company.search_area || "-"}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <Link href={`/details/${company.id}`}>

@@ -42,6 +42,10 @@ function CompaniesContent() {
   // Status filter (separate from URL param)
   const [statusFilter, setStatusFilter] = useState<CompanyStatus | "all">("all");
 
+  // Keyword and Area filters
+  const [keywordFilter, setKeywordFilter] = useState<string>("all");
+  const [areaFilter, setAreaFilter] = useState<string>("all");
+
   // Sort
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -55,6 +59,20 @@ function CompaniesContent() {
   const title = config?.label || "全企業";
   const description = config?.description || "登録されているすべての企業";
 
+  // Get unique keywords and areas for filter options
+  const { uniqueKeywords, uniqueAreas } = useMemo(() => {
+    const keywords = new Set<string>();
+    const areas = new Set<string>();
+    companies.forEach((company) => {
+      if (company.search_keyword) keywords.add(company.search_keyword);
+      if (company.search_area) areas.add(company.search_area);
+    });
+    return {
+      uniqueKeywords: Array.from(keywords).sort((a, b) => a.localeCompare(b, "ja")),
+      uniqueAreas: Array.from(areas).sort((a, b) => a.localeCompare(b, "ja")),
+    };
+  }, [companies]);
+
   // Filter and sort companies
   const filteredAndSortedCompanies = useMemo(() => {
     let result = [...companies];
@@ -62,6 +80,16 @@ function CompaniesContent() {
     // Status filter
     if (statusFilter !== "all") {
       result = result.filter((company) => company.status === statusFilter);
+    }
+
+    // Keyword filter
+    if (keywordFilter !== "all") {
+      result = result.filter((company) => company.search_keyword === keywordFilter);
+    }
+
+    // Area filter
+    if (areaFilter !== "all") {
+      result = result.filter((company) => company.search_area === areaFilter);
     }
 
     // Search filter
@@ -102,7 +130,7 @@ function CompaniesContent() {
     });
 
     return result;
-  }, [companies, statusFilter, searchQuery, sortField, sortOrder]);
+  }, [companies, statusFilter, keywordFilter, areaFilter, searchQuery, sortField, sortOrder]);
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedCompanies.length / itemsPerPage);
@@ -119,6 +147,16 @@ function CompaniesContent() {
 
   const handleStatusFilterChange = (value: CompanyStatus | "all") => {
     setStatusFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleKeywordFilterChange = (value: string) => {
+    setKeywordFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleAreaFilterChange = (value: string) => {
+    setAreaFilter(value);
     setCurrentPage(1);
   };
 
@@ -179,6 +217,36 @@ function CompaniesContent() {
               <option value="pending">{STATUS_CONFIG.pending.label}</option>
               <option value="scraped">{STATUS_CONFIG.scraped.label}</option>
               <option value="emailed">{STATUS_CONFIG.emailed.label}</option>
+            </select>
+          )}
+          {/* Keyword Filter */}
+          {uniqueKeywords.length > 0 && (
+            <select
+              value={keywordFilter}
+              onChange={(e) => handleKeywordFilterChange(e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="all">すべてのキーワード</option>
+              {uniqueKeywords.map((keyword) => (
+                <option key={keyword} value={keyword}>
+                  {keyword}
+                </option>
+              ))}
+            </select>
+          )}
+          {/* Area Filter */}
+          {uniqueAreas.length > 0 && (
+            <select
+              value={areaFilter}
+              onChange={(e) => handleAreaFilterChange(e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="all">すべてのエリア</option>
+              {uniqueAreas.map((area) => (
+                <option key={area} value={area}>
+                  {area}
+                </option>
+              ))}
             </select>
           )}
         </div>

@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
           website: place.website || null,
           rating: place.rating || null,
           business_type: businessType || null,
+          search_keyword: keyword,
+          search_area: location,
           status: 'pending' as const,
         };
 

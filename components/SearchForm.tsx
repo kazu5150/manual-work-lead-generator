@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -35,10 +35,16 @@ const SAMPLE_KEYWORDS = [
 
 export function SearchForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
   const [businessType, setBusinessType] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // URLパラメータが変更されたらローディングをリセット
+  useEffect(() => {
+    setIsLoading(false);
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

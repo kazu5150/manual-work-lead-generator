@@ -7,6 +7,8 @@ export interface Company {
   website: string | null;
   rating: number | null;
   business_type: string | null;
+  search_keyword: string | null;
+  search_area: string | null;
   ai_score: number | null;
   ai_reason: string | null;
   status: 'pending' | 'scraped' | 'emailed';
