@@ -15,9 +15,34 @@ export interface Company {
   ai_reason: string | null;
   partner_score: number | null;
   company_type: CompanyType | null;
+  quick_score: QuickScore | null;
+  quick_reason: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
   status: 'pending' | 'scraped' | 'emailed';
   created_at: string;
   updated_at: string;
+}
+
+// 簡易AI分析の星評価（1-3の3段階）
+export type QuickScore = 1 | 2 | 3;
+
+// 検索プレビュー用の企業情報（DB保存前）
+export interface PreviewCompany {
+  place_id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  website: string | null;
+  rating: number | null;
+  business_type: string | null;
+  search_keyword: string;
+  search_area: string;
+  quick_score: QuickScore;
+  quick_reason: string;
+  meta_title: string | null;
+  meta_description: string | null;
+  selected: boolean;
 }
 
 export interface ScrapedData {

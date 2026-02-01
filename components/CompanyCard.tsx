@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Company } from "@/types";
 import { STATUS_CONFIG, getScoreVariant } from "@/lib/constants";
 import { BUSINESS_TYPES } from "@/types";
+import { StarRating } from "./StarRating";
 import {
   MapPin,
   Phone,
@@ -36,6 +37,11 @@ export function CompanyCard({ company, showAnalysis = false }: CompanyCardProps)
           <Badge variant={statusConfig.badgeVariant} className="whitespace-nowrap">
             {statusConfig.label}
           </Badge>
+          {company.quick_score && (
+            <div className="flex items-center gap-1">
+              <StarRating score={company.quick_score} size="sm" />
+            </div>
+          )}
           {showAnalysis && company.company_type && (
             <Badge variant={company.company_type === "partner" ? "default" : "secondary"} className="whitespace-nowrap">
               {company.company_type === "outsource" ? "外注検討" :

@@ -242,3 +242,63 @@ export async function scrapeMultipleUrls(urls: string[]): Promise<ScrapeResult[]
   );
   return results;
 }
+
+// メタデータのみ取得用の結果型
+export interface MetadataResult {
+  success: boolean;
+  url: string;
+  title?: string;
+  description?: string;
+  error?: string;
+}
+
+// 単一URLのメタデータのみ取得（軽量スクレイピング）
+export async function scrapeMetadataOnly(url: string): Promise<MetadataResult> {
+  try {
+    const response = await fetch(`${FIRECRAWL_API_BASE}/scrape`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+      },
+      body: JSON.stringify({
+        url,
+        formats: ['markdown'],
+        onlyMainContent: false,
+        includeTags: ['title', 'meta'],
+        excludeTags: ['script', 'style', 'nav', 'footer', 'header'],
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        url,
+        error: data.error || 'Failed to scrape metadata',
+      };
+    }
+
+    return {
+      success: true,
+      url,
+      title: data.data?.metadata?.title || '',
+      description: data.data?.metadata?.description || '',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      url,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+// 複数URLのメタデータを一括取得
+export async function scrapeMetadataMultiple(urls: string[]): Promise<MetadataResult[]> {
+  const results = await Promise.all(
+    urls.map(url => scrapeMetadataOnly(url))
+  );
+  return results;
+}
