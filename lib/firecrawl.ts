@@ -148,10 +148,14 @@ export async function crawlWebsite(
 // Search API - サイト内で特定キーワードを含むページを検索
 export async function searchWebsite(
   domain: string,
-  keywords: string[] = ['手作業', '外注', '委託', '作業', 'サービス']
+  keywords?: string[],
+  limit: number = 5
 ): Promise<SearchResult> {
+  // デフォルトキーワード
+  const searchKeywords = keywords ?? ['手作業', '外注', '委託', '作業', 'サービス'];
+
   try {
-    const query = `site:${domain} ${keywords.join(' OR ')}`;
+    const query = `site:${domain} ${searchKeywords.join(' OR ')}`;
 
     const response = await fetch(`${FIRECRAWL_API_BASE}/search`, {
       method: 'POST',
@@ -161,7 +165,7 @@ export async function searchWebsite(
       },
       body: JSON.stringify({
         query,
-        limit: 5,
+        limit,
       }),
     });
 
@@ -196,8 +200,12 @@ export async function searchWebsite(
 // Map API - サイト内のURL一覧を取得し、関連ページをフィルタ
 export async function mapWebsite(
   url: string,
-  searchTerms: string = 'サービス OR 事業 OR 会社概要 OR about OR service OR business'
+  searchTerms?: string,
+  limit: number = 10
 ): Promise<MapResult> {
+  // デフォルト検索語句
+  const search = searchTerms ?? 'サービス OR 事業 OR 会社概要 OR about OR service OR business';
+
   try {
     const response = await fetch(`${FIRECRAWL_API_BASE}/map`, {
       method: 'POST',
@@ -207,8 +215,8 @@ export async function mapWebsite(
       },
       body: JSON.stringify({
         url,
-        search: searchTerms,
-        limit: 10,
+        search,
+        limit,
       }),
     });
 

@@ -9,6 +9,10 @@ import {
   analyzeCompanyWithContent,
 } from "./claude";
 import { Company, AnalysisResult } from "@/types";
+import {
+  generateSearchKeywords,
+  generateMapSearchTerms,
+} from "./crawl-keywords";
 
 export type ScrapeStrategy = "search" | "map" | "fallback";
 
@@ -38,14 +42,28 @@ export function extractDomain(url: string): string {
   }
 }
 
+export interface FindRelevantUrlsOptions {
+  businessType?: string | null;
+  searchKeyword?: string | null;
+}
+
 export async function findRelevantUrls(
-  website: string
+  website: string,
+  options: FindRelevantUrlsOptions = {}
 ): Promise<ScrapeStrategyResult> {
   const domain = extractDomain(website);
+  const { businessType, searchKeyword } = options;
+
+  // 動的キーワード生成
+  const searchKeywords = generateSearchKeywords(businessType, searchKeyword);
+  const mapSearchTerms = generateMapSearchTerms(businessType, searchKeyword);
+
+  console.log(`[Scrape] Using search keywords: ${searchKeywords.slice(0, 5).join(', ')}...`);
+  console.log(`[Scrape] Using map search terms: ${mapSearchTerms.slice(0, 100)}...`);
 
   // Strategy 1: Search API
   console.log(`[Scrape] Step 1: Searching for relevant pages on ${domain}`);
-  const searchResult = await searchWebsite(domain);
+  const searchResult = await searchWebsite(domain, searchKeywords);
 
   if (searchResult.success && searchResult.urls.length > 0) {
     console.log(
@@ -56,7 +74,7 @@ export async function findRelevantUrls(
 
   // Strategy 2: Map API
   console.log("[Scrape] Step 2: No search results, trying Map API");
-  const mapResult = await mapWebsite(website);
+  const mapResult = await mapWebsite(website, mapSearchTerms);
 
   if (mapResult.success && mapResult.urls.length > 0) {
     console.log(`[Scrape] Found ${mapResult.urls.length} pages via Map API`);
@@ -88,8 +106,11 @@ export async function analyzeCompany(
     return null;
   }
 
-  // Step 1-3: Find relevant URLs
-  const { urls, strategy } = await findRelevantUrls(company.website);
+  // Step 1-3: Find relevant URLs with dynamic keywords based on company info
+  const { urls, strategy } = await findRelevantUrls(company.website, {
+    businessType: company.business_type,
+    searchKeyword: company.search_keyword,
+  });
 
   // Step 4: Scrape pages
   console.log(`[Scrape] Step 4: Scraping ${urls.length} pages`);
