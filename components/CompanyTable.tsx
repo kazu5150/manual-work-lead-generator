@@ -13,10 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Company } from "@/types";
 import { STATUS_CONFIG, getScoreVariant } from "@/lib/constants";
+import { SortField, SortOrder } from "@/hooks/useCompanyFilters";
 import { ArrowUpDown, ExternalLink, Eye } from "lucide-react";
-
-type SortField = "name" | "ai_score" | "status" | "created_at";
-type SortOrder = "asc" | "desc";
 
 interface CompanyTableProps {
   companies: Company[];
@@ -61,19 +59,33 @@ export function CompanyTable({
             <TableHead className="w-[250px]">
               <SortButton field="name">企業名</SortButton>
             </TableHead>
-            <TableHead className="hidden md:table-cell">住所</TableHead>
-            <TableHead className="hidden lg:table-cell">電話番号</TableHead>
-            <TableHead className="hidden sm:table-cell">タイプ</TableHead>
+            <TableHead className="hidden md:table-cell">
+              <SortButton field="address">住所</SortButton>
+            </TableHead>
+            <TableHead className="hidden lg:table-cell">
+              <SortButton field="phone">電話番号</SortButton>
+            </TableHead>
+            <TableHead className="hidden sm:table-cell">
+              <SortButton field="company_type">タイプ</SortButton>
+            </TableHead>
             <TableHead>
               <SortButton field="ai_score">外注</SortButton>
             </TableHead>
-            <TableHead className="hidden sm:table-cell">パートナー</TableHead>
+            <TableHead className="hidden sm:table-cell">
+              <SortButton field="partner_score">パートナー</SortButton>
+            </TableHead>
             <TableHead>
               <SortButton field="status">ステータス</SortButton>
             </TableHead>
-            <TableHead className="hidden sm:table-cell">HP</TableHead>
-            <TableHead className="hidden lg:table-cell">キーワード</TableHead>
-            <TableHead className="hidden lg:table-cell">エリア</TableHead>
+            <TableHead className="hidden sm:table-cell">
+              <SortButton field="website">HP</SortButton>
+            </TableHead>
+            <TableHead className="hidden lg:table-cell">
+              <SortButton field="search_keyword">キーワード</SortButton>
+            </TableHead>
+            <TableHead className="hidden lg:table-cell">
+              <SortButton field="search_area">エリア</SortButton>
+            </TableHead>
             <TableHead className="w-[80px]">操作</TableHead>
           </TableRow>
         </TableHeader>

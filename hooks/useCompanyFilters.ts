@@ -2,8 +2,19 @@ import { useState, useMemo } from "react";
 import { Company } from "@/types";
 import { CompanyStatus } from "@/lib/constants";
 
-type SortField = "name" | "ai_score" | "status" | "created_at";
-type SortOrder = "asc" | "desc";
+export type SortField =
+  | "name"
+  | "address"
+  | "phone"
+  | "company_type"
+  | "ai_score"
+  | "partner_score"
+  | "status"
+  | "website"
+  | "search_keyword"
+  | "search_area"
+  | "created_at";
+export type SortOrder = "asc" | "desc";
 
 interface UseCompanyFiltersProps {
   companies: Company[];
@@ -85,14 +96,45 @@ export function useCompanyFilters({ companies, urlStatus }: UseCompanyFiltersPro
         case "name":
           comparison = a.name.localeCompare(b.name, "ja");
           break;
-        case "ai_score":
+        case "address":
+          comparison = (a.address || "").localeCompare(b.address || "", "ja");
+          break;
+        case "phone":
+          comparison = (a.phone || "").localeCompare(b.phone || "", "ja");
+          break;
+        case "company_type": {
+          const typeOrder = { partner: 0, outsource: 1, unknown: 2 };
+          const typeA = a.company_type ? typeOrder[a.company_type] ?? 3 : 3;
+          const typeB = b.company_type ? typeOrder[b.company_type] ?? 3 : 3;
+          comparison = typeA - typeB;
+          break;
+        }
+        case "ai_score": {
           const scoreA = a.ai_score ?? -1;
           const scoreB = b.ai_score ?? -1;
           comparison = scoreA - scoreB;
           break;
-        case "status":
+        }
+        case "partner_score": {
+          const pScoreA = a.partner_score ?? -1;
+          const pScoreB = b.partner_score ?? -1;
+          comparison = pScoreA - pScoreB;
+          break;
+        }
+        case "status": {
           const statusOrder = { pending: 0, scraped: 1, emailed: 2 };
           comparison = statusOrder[a.status] - statusOrder[b.status];
+          break;
+        }
+        case "website":
+          // HP有りを先に、無しを後に
+          comparison = (a.website ? 0 : 1) - (b.website ? 0 : 1);
+          break;
+        case "search_keyword":
+          comparison = (a.search_keyword || "").localeCompare(b.search_keyword || "", "ja");
+          break;
+        case "search_area":
+          comparison = (a.search_area || "").localeCompare(b.search_area || "", "ja");
           break;
         case "created_at":
           comparison =
